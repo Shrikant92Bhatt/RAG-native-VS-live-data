@@ -2,22 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-main: #080A0D;
-  --bg-surface: #0E1217;
-  --bg-card: #141A22;
-  --border-subtle: #1D2530;
-  --border-active: #323F52;
-  --accent-amber: #D97706;
-  --accent-blue: #3B82F6;
-  --accent-emerald: #10B981;
+@layer base {
+  :root {
+    --background: 220 25% 4%;
+    --foreground: 210 40% 98%;
+    --card: 220 22% 7%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 22% 7%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 220 25% 4%;
+    --secondary: 218 25% 15%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 218 20% 12%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 218 25% 16%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 218 22% 16%;
+    --input: 218 22% 16%;
+    --ring: 38 92% 50%;
+    --radius: 0.5rem;
+  }
 }
 
-body {
-  background-color: var(--bg-main);
-  color: #E2E8F0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+  }
 }
 
 /* Precision Grid Background Pattern */
@@ -28,7 +46,7 @@ body {
     linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
-/* Custom Minimalist Scrollbars */
+/* Minimalist Workspace Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -39,25 +57,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #232C3A;
+  background: #202B3A;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #344256;
+  background: #324258;
 }
 
-/* Monospace Accent Labels */
 .font-mono-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-}
-
-/* Shimmer pulse for pipeline phases */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

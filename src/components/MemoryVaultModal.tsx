@@ -1,8 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Database, Plus, Trash2, BrainCircuit, Sparkles } from 'lucide-react';
+import { Database, Plus, Trash2 } from 'lucide-react';
 import { MemoryItem } from '../types/index';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Badge } from './ui/badge';
 
 interface MemoryVaultModalProps {
   isOpen: boolean;
@@ -23,8 +33,6 @@ export const MemoryVaultModal: React.FC<MemoryVaultModalProps> = ({
   const [newContent, setNewContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen) return null;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newContent.trim()) return;
@@ -38,33 +46,28 @@ export const MemoryVaultModal: React.FC<MemoryVaultModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#0D1219] border border-[#1E2938] rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-150">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-[#1E2938] flex items-center justify-between bg-[#111722]">
+        <DialogHeader className="p-4 border-b border-border bg-secondary/50">
           <div className="flex items-center gap-2">
             <Database className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-semibold text-slate-100 uppercase tracking-wide">
-              Persistent Memory Vault (MAG)
-            </h2>
+            <DialogTitle>Persistent Memory Vault (MAG)</DialogTitle>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1E2938] transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+          <DialogDescription>
+            Memory-Augmented Generation maintains long-term project facts and preferences across sessions.
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="p-5 space-y-5 max-h-[80vh] overflow-y-auto">
-          {/* Information Notice */}
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 leading-relaxed">
-            <strong>Memory-Augmented Generation (MAG)</strong> maintains persistent long-term facts, user preferences, and project decisions across sessions. Memories are stored in PostgreSQL with pgvector embeddings and tenant-level data isolation.
+        <div className="p-5 space-y-4 flex-1 overflow-y-auto">
+          {/* Architecture notice */}
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 leading-relaxed">
+            Memories are persisted in PostgreSQL with pgvector embeddings and tenant-level SQL data isolation.
           </div>
 
           {/* Add New Memory Form */}
-          <form onSubmit={handleSubmit} className="p-4 rounded-lg bg-[#131B26] border border-[#202C3E] space-y-3">
-            <span className="text-xs font-mono uppercase text-slate-300 flex items-center gap-1.5">
+          <form onSubmit={handleSubmit} className="p-4 rounded-lg bg-secondary/40 border border-border space-y-3">
+            <span className="text-xs font-mono uppercase text-muted-foreground flex items-center gap-1.5">
               <Plus className="w-3.5 h-3.5 text-amber-400" />
               Register New Memory
             </span>
@@ -72,64 +75,67 @@ export const MemoryVaultModal: React.FC<MemoryVaultModalProps> = ({
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
-                className="bg-[#0A0E14] border border-[#222E40] rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                className="bg-background border border-input rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-amber-500 font-mono"
               >
                 <option value="preference">Preference</option>
                 <option value="project_context">Project Context</option>
                 <option value="fact">Fact</option>
                 <option value="summary">Summary</option>
               </select>
-              <input
+              <Input
                 type="text"
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
                 placeholder="e.g. Production database is PostgreSQL 16 with pgvector..."
-                className="flex-1 bg-[#0A0E14] border border-[#222E40] rounded px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                className="flex-1"
               />
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting || !newContent.trim()}
-                className="px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black text-xs font-semibold transition-colors"
+                variant="amber"
+                size="sm"
               >
                 {isSubmitting ? 'Saving...' : 'Add'}
-              </button>
+              </Button>
             </div>
           </form>
 
           {/* Stored Memories List */}
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase text-slate-400 tracking-wider">
+            <span className="text-xs font-mono uppercase text-muted-foreground tracking-wider">
               Stored Facts ({memories.length})
             </span>
             <div className="space-y-2">
               {memories.map((m) => (
                 <div
                   key={m.id}
-                  className="p-3 rounded-lg bg-[#111721] border border-[#1E2836] flex items-start justify-between gap-3 text-xs"
+                  className="p-3 rounded-lg bg-secondary/30 border border-border flex items-start justify-between gap-3 text-xs"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-[#1A2330] border border-[#2A374A] text-amber-300">
+                      <Badge variant="amber" className="uppercase font-mono text-[9px]">
                         {m.memoryType}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-500">
+                      </Badge>
+                      <span className="text-[10px] font-mono text-muted-foreground">
                         Importance: {(m.importance * 100).toFixed(0)}%
                       </span>
                     </div>
-                    <p className="text-slate-200 leading-relaxed">{m.content}</p>
+                    <p className="text-foreground/90 leading-relaxed">{m.content}</p>
                   </div>
-                  <button
+                  <Button
                     onClick={() => onDeleteMemory(m.id)}
-                    className="p-1 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

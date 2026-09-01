@@ -5,16 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
   Send, 
-  Sparkles, 
-  Layers, 
   ShieldCheck, 
-  Zap, 
-  Database, 
-  Search, 
-  CheckCircle2, 
-  ArrowRight,
-  Terminal,
-  Activity,
   Cpu
 } from 'lucide-react';
 import { Sidebar } from '../components/Sidebar';
@@ -23,6 +14,9 @@ import { ExecutionTimeline } from '../components/ExecutionTimeline';
 import { MemoryVaultModal } from '../components/MemoryVaultModal';
 import { TelemetryModal } from '../components/TelemetryModal';
 import { IntegrationsModal } from '../components/IntegrationsModal';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
 import { Message, Citation, ExecutionMode, IntegrationStatus, MemoryItem, SystemMetrics, PlanStep } from '../types/index';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
@@ -48,7 +42,8 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
 - **Cache-Augmented Generation (CAG)**: Delivers sub-20ms instant responses for repeated context.
 - **Hybrid Retrieval (RAG)**: Cosine vector search fused with BM25 keyword search via **Reciprocal Rank Fusion (RRF)**.
 - **Memory-Augmented Generation (MAG)**: Remembers project decisions, architectural facts, and user preferences.
-- **Verified Citations**: Grounded provenance with citation inspection drawer.`,
+- **Verified Citations**: Grounded provenance with citation inspection drawer.
+- **shadcn/ui Design**: High-craft architectural UI with accessible Radix primitives.`,
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -166,7 +161,6 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
       let latency = 0;
       let cacheHit = false;
 
-      // Add empty assistant placeholder
       setMessages((prev) => [
         ...prev,
         {
@@ -267,7 +261,6 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
         await fetchMemories();
       }
     } catch {
-      // In-memory update
       setMemories((prev) => [
         {
           id: `mem_${Date.now()}`,
@@ -304,7 +297,6 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
   const handleRunAutomatedBenchmarks = async () => {
     setIsRunningBenchmark(true);
     try {
-      // Trigger repeated calls to evaluate CAG hit & latency
       for (const t of PROMPT_TEMPLATES) {
         await fetch(`${API_BASE}/api/v1/chat`, {
           method: 'POST',
@@ -319,7 +311,7 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#080A0D]">
+    <div className="flex h-screen w-screen overflow-hidden bg-background">
       {/* Left Workspace Navigation */}
       <Sidebar
         onNewChat={() => {
@@ -340,30 +332,28 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
       />
 
       {/* Main Workspace Canvas */}
-      <main className="flex-1 flex flex-col h-full bg-[#0A0D12] relative overflow-hidden bg-precision-grid">
+      <main className="flex-1 flex flex-col h-full bg-background/95 relative overflow-hidden bg-precision-grid">
         {/* Workspace Top Toolbar */}
-        <header className="h-14 border-b border-[#18202B] px-5 flex items-center justify-between bg-[#0C1016]/90 backdrop-blur-sm z-10">
+        <header className="h-14 border-b border-border px-5 flex items-center justify-between bg-card/70 backdrop-blur-sm z-10">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono uppercase text-slate-400">Engine Mode:</span>
-            <div className="flex items-center gap-1 bg-[#121822] p-1 rounded-md border border-[#1E2838]">
+            <span className="text-xs font-mono uppercase text-muted-foreground">Engine Mode:</span>
+            <div className="flex items-center gap-1 bg-secondary/80 p-1 rounded-lg border border-border">
               {(['AUTO', 'RAG', 'CAG', 'MAG', 'LIVE_TOOL', 'MULTI_HOP'] as ExecutionMode[]).map((mode) => (
-                <button
+                <Button
                   key={mode}
                   onClick={() => setSelectedMode(mode)}
-                  className={`px-2.5 py-1 rounded text-[11px] font-mono transition-all ${
-                    selectedMode === mode
-                      ? 'bg-amber-500 text-black font-semibold shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#18212D]'
-                  }`}
+                  variant={selectedMode === mode ? 'amber' : 'ghost'}
+                  size="sm"
+                  className={`h-7 px-2.5 text-[11px] font-mono ${selectedMode === mode ? 'shadow-sm' : 'text-muted-foreground'}`}
                 >
                   {mode}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-[#121822] border border-[#1E2838] text-[11px] font-mono text-slate-300">
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-secondary/60 border border-border text-[11px] font-mono text-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>pgvector + Redis Connected</span>
             </div>
@@ -380,7 +370,7 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
               }`}
             >
               {message.role === 'assistant' && (
-                <div className="w-8 h-8 rounded bg-[#151D28] border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-1 shadow-sm">
+                <div className="w-8 h-8 rounded bg-secondary border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-1 shadow-sm">
                   <Cpu className="w-4 h-4" />
                 </div>
               )}
@@ -388,8 +378,8 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
               <div
                 className={`rounded-xl p-4 text-xs md:text-sm leading-relaxed max-w-[85%] ${
                   message.role === 'user'
-                    ? 'bg-[#182230] border border-[#26354A] text-slate-100'
-                    : 'bg-[#0E141D] border border-[#1B2533] text-slate-200 shadow-md'
+                    ? 'bg-secondary text-foreground border border-border'
+                    : 'bg-card border border-border text-foreground shadow-md'
                 }`}
               >
                 {/* Markdown message body */}
@@ -398,12 +388,12 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
                     remarkPlugins={[remarkGfm]}
                     components={{
                       p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
-                      h3: ({ children }) => <h3 className="text-sm font-semibold text-slate-100 mt-3 mb-1">{children}</h3>,
-                      h4: ({ children }) => <h4 className="text-xs font-semibold text-amber-300 mt-2 mb-1">{children}</h4>,
+                      h3: ({ children }) => <h3 className="text-sm font-semibold text-foreground mt-3 mb-1">{children}</h3>,
+                      h4: ({ children }) => <h4 className="text-xs font-semibold text-amber-400 mt-2 mb-1">{children}</h4>,
                       ul: ({ children }) => <ul className="list-disc pl-4 space-y-1 my-2">{children}</ul>,
-                      li: ({ children }) => <li className="text-slate-300">{children}</li>,
+                      li: ({ children }) => <li className="text-foreground/90">{children}</li>,
                       code: ({ children }) => (
-                        <code className="px-1.5 py-0.5 rounded bg-[#17202C] text-amber-300 font-mono text-[11px] border border-[#232F42]">
+                        <code className="px-1.5 py-0.5 rounded bg-secondary text-amber-300 font-mono text-[11px] border border-border">
                           {children}
                         </code>
                       ),
@@ -415,23 +405,25 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
 
                 {/* Grounded Citation Badges */}
                 {message.citations && message.citations.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-[#1B2533] space-y-2">
-                    <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                  <div className="mt-3 pt-3 border-t border-border space-y-2">
+                    <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider flex items-center gap-1.5">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                       Grounded Citations & Provenance ({message.citations.length})
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {message.citations.map((c) => (
-                        <button
+                        <Button
                           key={c.sourceId}
                           onClick={() => setActiveCitation(c)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#141B26] hover:bg-[#1C2636] border border-[#202C3E] text-slate-300 text-xs font-medium transition-colors"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs font-medium gap-1.5 bg-secondary/50 hover:bg-secondary border-border"
                         >
                           <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 font-mono text-[10px] flex items-center justify-center">
                             {c.citationIndex}
                           </span>
                           <span className="truncate max-w-[140px]">{c.title}</span>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -439,14 +431,14 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
 
                 {/* Turn Telemetry Footer */}
                 {message.latencyMs !== undefined && (
-                  <div className="mt-2 pt-2 border-t border-[#18202A] flex items-center gap-3 text-[10px] font-mono text-slate-500">
-                    <span className="text-slate-400">
+                  <div className="mt-2 pt-2 border-t border-border flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
+                    <span className="text-foreground">
                       {message.cacheHit ? '⚡ CAG HIT' : 'LIVE RAG'}
                     </span>
                     <span>•</span>
                     <span>{message.latencyMs}ms</span>
                     <span>•</span>
-                    <span>Isolated: tenant_default_production</span>
+                    <span>Tenant: tenant_default_production</span>
                   </div>
                 )}
               </div>
@@ -468,19 +460,21 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
         </div>
 
         {/* Input Bar & Suggested Templates */}
-        <div className="p-4 border-t border-[#18202B] bg-[#0A0D12]">
+        <div className="p-4 border-t border-border bg-card/60 backdrop-blur-sm">
           <div className="max-w-4xl mx-auto space-y-3">
             {/* Quick Inquiry Templates */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-              <span className="text-[10px] font-mono uppercase text-slate-500 shrink-0">Sample Queries:</span>
+              <span className="text-[10px] font-mono uppercase text-muted-foreground shrink-0">Sample Queries:</span>
               {PROMPT_TEMPLATES.map((tmpl, i) => (
-                <button
+                <Button
                   key={i}
                   onClick={() => handleSendMessage(tmpl)}
-                  className="px-2.5 py-1 rounded-full bg-[#121822] hover:bg-[#1A2330] border border-[#1E2938] text-slate-300 text-[11px] truncate shrink-0 transition-colors"
+                  variant="outline"
+                  size="sm"
+                  className="h-6 rounded-full text-[11px] font-normal px-2.5 truncate shrink-0 border-border text-foreground/80 hover:text-foreground"
                 >
                   {tmpl}
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -490,24 +484,26 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="flex items-center gap-2 bg-[#10151E] border border-[#1E2938] rounded-lg p-1.5 focus-within:border-amber-500/80 transition-all shadow-lg"
+              className="flex items-center gap-2 bg-background border border-input rounded-lg p-1.5 focus-within:border-amber-500/80 transition-all shadow-lg"
             >
-              <input
+              <Input
                 type="text"
                 value={inputQuery}
                 onChange={(e) => setInputQuery(e.target.value)}
                 placeholder="Ask about live Jira tickets, Gmail threads, Notion architecture, or memory..."
                 disabled={isStreaming}
-                className="flex-1 bg-transparent px-3 py-1.5 text-xs md:text-sm text-slate-100 placeholder-slate-500 focus:outline-none disabled:opacity-50"
+                className="border-0 shadow-none focus-visible:ring-0 text-xs md:text-sm"
               />
-              <button
+              <Button
                 type="submit"
                 disabled={isStreaming || !inputQuery.trim()}
-                className="px-3.5 py-2 rounded-md bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-black font-semibold text-xs flex items-center gap-1.5 transition-all shadow active:scale-95"
+                variant="amber"
+                size="sm"
+                className="gap-1.5"
               >
                 <span>Execute</span>
                 <Send className="w-3.5 h-3.5" />
-              </button>
+              </Button>
             </form>
           </div>
         </div>
