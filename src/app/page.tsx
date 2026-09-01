@@ -14,6 +14,7 @@ import { ExecutionTimeline } from '../components/ExecutionTimeline';
 import { MemoryVaultModal } from '../components/MemoryVaultModal';
 import { TelemetryModal } from '../components/TelemetryModal';
 import { IntegrationsModal } from '../components/IntegrationsModal';
+import { KnowledgeBaseModal, DocumentItem } from '../components/KnowledgeBaseModal';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
@@ -42,6 +43,7 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
 - **Cache-Augmented Generation (CAG)**: Delivers sub-20ms instant responses for repeated context.
 - **Hybrid Retrieval (RAG)**: Cosine vector search fused with BM25 keyword search via **Reciprocal Rank Fusion (RRF)**.
 - **Memory-Augmented Generation (MAG)**: Remembers project decisions, architectural facts, and user preferences.
+- **File Upload & Knowledge Base**: Upload Markdown, TXT, JSON, and CSV files directly into the vector database.
 - **Verified Citations**: Grounded provenance with citation inspection drawer.
 - **shadcn/ui Design**: High-craft architectural UI with accessible Radix primitives.`,
       timestamp: new Date().toISOString(),
@@ -56,16 +58,23 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
   const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
 
   // Modals
+  const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(false);
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [isIntegrationsOpen, setIsIntegrationsOpen] = useState(false);
   const [isRunningBenchmark, setIsRunningBenchmark] = useState(false);
 
   // State data
+  const [documents, setDocuments] = useState<DocumentItem[]>([
+    { id: 'doc_notion_architecture', title: 'Core Engine Architecture & Service Level Agreements', provider: 'notion', author: 'Platform Architecture Team', chunkCount: 3, createdAt: new Date().toISOString() },
+    { id: 'doc_jira_sprint', title: '[PROJ-1042] Deploy Hybrid Reranker and Multi-hop Query Router', provider: 'jira', author: 'Sarah Jenkins (Principal SRE)', chunkCount: 3, createdAt: new Date().toISOString() },
+    { id: 'doc_gmail_client_update', title: 'Q3 Enterprise Deployment Schedule & Security Review', provider: 'gmail', author: 'David Vance <dvance@security-audit.com>', chunkCount: 3, createdAt: new Date().toISOString() },
+  ]);
+
   const [integrations, setIntegrations] = useState<IntegrationStatus[]>([
-    { provider: 'gmail', name: 'Google Workspace / Gmail', status: 'connected', lastSyncedAt: new Date().toISOString(), syncedItems: 24, syncHealth: 'healthy' },
-    { provider: 'notion', name: 'Notion Workspace', status: 'connected', lastSyncedAt: new Date().toISOString(), syncedItems: 18, syncHealth: 'healthy' },
-    { provider: 'jira', name: 'Atlassian Jira Software', status: 'connected', lastSyncedAt: new Date().toISOString(), syncedItems: 42, syncHealth: 'healthy' },
+    { provider: 'gmail', name: 'Google Workspace / Gmail', status: 'sandbox', lastSyncedAt: new Date().toISOString(), syncedItems: 24, syncHealth: 'healthy' },
+    { provider: 'notion', name: 'Notion Workspace', status: 'sandbox', lastSyncedAt: new Date().toISOString(), syncedItems: 18, syncHealth: 'healthy' },
+    { provider: 'jira', name: 'Atlassian Jira Software', status: 'sandbox', lastSyncedAt: new Date().toISOString(), syncedItems: 42, syncHealth: 'healthy' },
   ]);
 
   const [memories, setMemories] = useState<MemoryItem[]>([
@@ -85,10 +94,12 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
     scrollToBottom();
   }, [messages, currentPhase]);
 
-  // Fetch initial telemetry & memories
+  // Fetch initial telemetry, documents & memories
   useEffect(() => {
     fetchMetrics();
     fetchMemories();
+    fetchDocuments();
+    fetchIntegrations();
   }, []);
 
   const fetchMetrics = async () => {
@@ -97,6 +108,30 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
       if (res.ok) {
         const data = await res.json();
         setMetrics(data);
+      }
+    } catch {
+      // API may be in startup
+    }
+  };
+
+  const fetchDocuments = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/documents`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.documents && data.documents.length > 0) setDocuments(data.documents);
+      }
+    } catch {
+      // API may be in startup
+    }
+  };
+
+  const fetchIntegrations = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/integrations`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.integrations) setIntegrations(data.integrations);
       }
     } catch {
       // API may be in startup
@@ -112,6 +147,48 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
       }
     } catch {
       // API may be in startup
+    }
+  };
+
+  const handleUploadFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', file.name);
+
+    const res = await fetch(`${API_BASE}/api/v1/documents`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'File upload failed');
+    }
+
+    await fetchDocuments();
+  };
+
+  const handleAddManualText = async (title: string, content: string) => {
+    const res = await fetch(`${API_BASE}/api/v1/documents`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content, author: 'Manual Entry' }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to ingest document');
+    }
+
+    await fetchDocuments();
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    try {
+      await fetch(`${API_BASE}/api/v1/documents/${id}`, { method: 'DELETE' });
+      await fetchDocuments();
+    } catch {
+      setDocuments((prev) => prev.filter((d) => d.id !== id));
     }
   };
 
@@ -325,10 +402,13 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
           ]);
           setActiveCitation(null);
         }}
+        onOpenKnowledgeBase={() => setIsKnowledgeBaseOpen(true)}
         onOpenMemory={() => setIsMemoryOpen(true)}
         onOpenTelemetry={() => setIsTelemetryOpen(true)}
         onOpenIntegrations={() => setIsIntegrationsOpen(true)}
         integrations={integrations}
+        documentCount={documents.length}
+        memoryCount={memories.length}
       />
 
       {/* Main Workspace Canvas */}
@@ -353,6 +433,15 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              onClick={() => setIsKnowledgeBaseOpen(true)}
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs font-mono border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+            >
+              + Ingest Document
+            </Button>
+
             <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-secondary/60 border border-border text-[11px] font-mono text-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>pgvector + Redis Connected</span>
@@ -490,7 +579,7 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
                 type="text"
                 value={inputQuery}
                 onChange={(e) => setInputQuery(e.target.value)}
-                placeholder="Ask about live Jira tickets, Gmail threads, Notion architecture, or memory..."
+                placeholder="Ask about live Jira tickets, Gmail threads, Notion architecture, or uploaded docs..."
                 disabled={isStreaming}
                 className="border-0 shadow-none focus-visible:ring-0 text-xs md:text-sm"
               />
@@ -516,6 +605,15 @@ I operate across your live workspace data (**Gmail**, **Notion**, **Jira**), pgv
       />
 
       {/* Modals */}
+      <KnowledgeBaseModal
+        isOpen={isKnowledgeBaseOpen}
+        onClose={() => setIsKnowledgeBaseOpen(false)}
+        documents={documents}
+        onUploadFile={handleUploadFile}
+        onAddManualText={handleAddManualText}
+        onDeleteDocument={handleDeleteDocument}
+      />
+
       <MemoryVaultModal
         isOpen={isMemoryOpen}
         onClose={() => setIsMemoryOpen(false)}

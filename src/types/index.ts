@@ -36,10 +36,12 @@ export interface Message {
 export interface IntegrationStatus {
   provider: 'gmail' | 'notion' | 'jira';
   name: string;
-  status: 'connected' | 'syncing' | 'error' | 'disconnected';
+  status: 'connected' | 'syncing' | 'error' | 'disconnected' | 'sandbox';
   lastSyncedAt: string;
   syncedItems: number;
   syncHealth: string;
+  requiresConfig?: boolean;
+  requiredEnvVars?: string[];
 }
 
 export interface MemoryItem {
