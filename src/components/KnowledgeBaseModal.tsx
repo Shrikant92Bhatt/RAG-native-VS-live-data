@@ -187,7 +187,7 @@ export const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".txt,.md,.markdown,.json,.csv,.pdf,.doc,.docx"
+                  accept=".xlsx,.xls,.csv,.pdf,.txt,.md,.markdown,.json,.doc,.docx"
                   onChange={(e) => handleFileChange(e.target.files)}
                   className="hidden"
                 />
@@ -201,10 +201,10 @@ export const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({
                 </div>
 
                 <h3 className="text-sm font-semibold text-foreground mb-1">
-                  {isUploading ? 'Chunking & Embedding Document...' : 'Click to upload or drag and drop'}
+                  {isUploading ? 'Parsing, Chunking & Embedding Document...' : 'Click to upload or drag and drop'}
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-sm mb-3">
-                  Supports Markdown (.md), Plain Text (.txt), JSON, CSV, and code documentation files.
+                  Supports Excel (.xlsx, .xls), PDF, CSV, Markdown (.md), Plain Text (.txt), and JSON files.
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -287,7 +287,7 @@ export const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded bg-secondary border border-border flex items-center justify-center text-amber-400 shrink-0">
-                        {doc.title.endsWith('.csv') ? (
+                        {doc.title.endsWith('.csv') || doc.title.endsWith('.xlsx') || doc.title.endsWith('.xls') ? (
                           <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
                         ) : doc.title.endsWith('.json') ? (
                           <FileCode className="w-4 h-4 text-cyan-400" />
