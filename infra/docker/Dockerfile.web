@@ -15,7 +15,9 @@ COPY apps/web/next.config.mjs apps/web/tailwind.config.ts apps/web/postcss.confi
 # Install dependencies
 RUN npm install --workspace=apps/web
 
-# Copy Web source
+# Ensure public dir exists and copy source
+RUN mkdir -p ./apps/web/public
+COPY apps/web/public ./apps/web/public
 COPY apps/web/src ./apps/web/src
 
 # Build Next.js
