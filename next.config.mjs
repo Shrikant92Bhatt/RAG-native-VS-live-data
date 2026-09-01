@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  serverExternalPackages: ['pg', 'ioredis', 'pino', 'pino-pretty'],
+  serverExternalPackages: ['pg', 'ioredis', 'pino', 'pino-pretty', 'pdf-parse'],
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
   },

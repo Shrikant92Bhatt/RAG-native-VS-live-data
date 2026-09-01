@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { ingestDocument, getAllDocuments } from '@/retrieval/ingest';
 import { config } from '@/config/index';
+import { PDFParse } from 'pdf-parse';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
     const tenantId = req.headers.get('x-tenant-id') || config.DEFAULT_TENANT_ID;
     const contentType = req.headers.get('content-type') || '';
 
-    // Case 1: FormData file upload
+    // Case 1: FormData file upload (supports .pdf, .md, .txt, .json, .csv)
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       const file = formData.get('file') as File | null;
@@ -37,11 +38,22 @@ export async function POST(req: NextRequest) {
       }
 
       const title = titleOverride || file.name;
-      const textContent = await file.text();
+      let textContent = '';
 
-      if (!textContent.trim()) {
+      if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const parser = new PDFParse({ data: buffer });
+        const result = await parser.getText();
+        textContent = result.text;
+        await parser.destroy();
+      } else {
+        textContent = await file.text();
+      }
+
+      if (!textContent || !textContent.trim()) {
         return NextResponse.json(
-          { error: 'EMPTY_FILE', message: 'File is empty' },
+          { error: 'EMPTY_FILE', message: 'File is empty or contains no extractable text' },
           { status: 400 }
         );
       }
