@@ -22,11 +22,10 @@ docker compose up -d --build
 ```
 
 ### Verified Service Endpoints:
-- **Next.js Web UI**: `http://localhost:3000`
-- **Fastify API Server**: `http://localhost:3001`
-- **Health Check**: `http://localhost:3001/api/v1/health`
-- **Readiness Check**: `http://localhost:3001/api/v1/ready`
-- **Observability Metrics**: `http://localhost:3001/api/v1/metrics`
+- **Unified Workspace & API**: `http://localhost:3000`
+- **Health Check**: `http://localhost:3000/api/v1/health`
+- **Readiness Check**: `http://localhost:3000/api/v1/ready`
+- **Observability Metrics**: `http://localhost:3000/api/v1/metrics`
 - **PostgreSQL 16**: `localhost:5432`
 - **Redis 7**: `localhost:6379`
 

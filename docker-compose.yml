@@ -40,54 +40,36 @@ services:
       retries: 5
 
   # -------------------------------------------------------------
-  # Fastify API: Agent Orchestrator, RAG/CAG/MAG & MCP Tools
+  # Unified Next.js 15 Platform (Agentic RAG Engine + Workspace UI)
   # -------------------------------------------------------------
-  api:
+  app:
     build:
       context: .
-      dockerfile: infra/docker/Dockerfile.api
-    container_name: rag_api
+      dockerfile: Dockerfile
+    container_name: rag_app
     restart: unless-stopped
     environment:
-      APP_ENV: production
-      APP_PORT: 3001
+      NODE_ENV: production
+      PORT: 3000
       DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/rag_live_data
       REDIS_URL: redis://redis:6379
       LOG_LEVEL: info
       JWT_SECRET: super-secret-production-jwt-token-min-32-chars
       DEFAULT_TENANT_ID: tenant_default_production
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-mock-key}
       DEFAULT_LLM_PROVIDER: ${DEFAULT_LLM_PROVIDER:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-mock-key}
     ports:
-      - "3001:3001"
+      - "3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3001/api/v1/health || exit 1"]
-      interval: 10s
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/v1/health || exit 1"]
+      interval: 15s
       timeout: 5s
       retries: 3
-
-  # -------------------------------------------------------------
-  # Next.js Precision Frontend: Workspace UI & Live Stream
-  # -------------------------------------------------------------
-  web:
-    build:
-      context: .
-      dockerfile: infra/docker/Dockerfile.web
-    container_name: rag_web
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:3001
-    ports:
-      - "3000:3000"
-    depends_on:
-      api:
-        condition: service_healthy
 
 volumes:
   pgdata:

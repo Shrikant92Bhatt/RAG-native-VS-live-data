@@ -3,30 +3,39 @@
 [![CI/CD Pipeline](https://github.com/Shrikant92Bhatt/RAG-native-VS-live-data/actions/workflows/ci.yml/badge.svg)](https://github.com/Shrikant92Bhatt/RAG-native-VS-live-data/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B%20LTS-339933?logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Fastify](https://img.shields.io/badge/Fastify-5.x-000000?logo=fastify)](https://fastify.dev/)
 [![Next.js](https://img.shields.io/badge/Next.js-15%20App%20Router-black?logo=next.js)](https://nextjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B%20LTS-339933?logo=node.js)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20%2B%20pgvector-336791?logo=postgresql)](https://github.com/pgvector/pgvector)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
 
-A deployable, production-grade agentic knowledge platform engineered to answer complex multi-hop queries across live enterprise workspace data (**Gmail**, **Notion**, **Jira**), persistent long-term memory (**MAG**), and indexed vector knowledge bases with grounded citations, cache-augmented generation (**CAG**), hybrid search, and strict multi-tenant isolation.
+A deployable, production-grade agentic knowledge platform engineered to answer complex multi-hop queries across live enterprise workspace data (**Gmail**, **Notion**, **Jira**), persistent long-term memory (**MAG**), and indexed vector knowledge bases with grounded citations, cache-augmented generation (**CAG**), hybrid search, and strict multi-tenant isolation — built as a **unified Next.js 15 application** with embedded Node.js Route Handlers.
 
 ---
 
-## 1. Production Architecture
+## 1. Unified Production Architecture
 
 ```text
-                               ┌──────────────────────────────────────────────┐
-                               │           Next.js Precision UI (Web)         │
-                               │  Chat Stream • Citation Drawer • Connectors  │
-                               │  Memory Vault • Benchmark Telemetry Dashboard│
-                               └──────────────────────┬───────────────────────┘
-                                                      │ HTTPS / SSE Stream
-                               ┌──────────────────────▼───────────────────────┐
-                               │       Fastify Production API Gateway         │
-                               │  Auth / JWT • Tenant Isolation • Rate Limits │
-                               │  Prompt Injection Defense • Pino Logging     │
-                               └──────────────────────┬───────────────────────┘
+       ┌─────────────────────────────────────────────────────────────────────────────┐
+       │                       Unified Next.js 15 Application                        │
+       │                                                                             │
+       │   ┌─────────────────────────────────┐   ┌───────────────────────────────┐   │
+       │   │   Architectural Workspace UI    │   │  Route Handlers (/api/v1/...) │   │
+       │   │  • Chat Stream & Citations      │   │  • Node.js Server Runtime     │   │
+       │   │  • Memory Vault (MAG)           │◄─►│  • Agent Orchestrator & SSE   │   │
+       │   │  • Connectors & Telemetry       │   │  • Multi-Hop Planner & Router │   │
+       │   └─────────────────────────────────┘   └───────────────┬───────────────┘   │
+       └─────────────────────────────────────────────────────────┼───────────────────┘
+                                                                 │
+                                ┌────────────────────────────────┴───────────────────┐
+                                │                                                    │
+                ┌───────────────▼─────────────┐                      ┌───────────────▼─────────────┐
+                │   PostgreSQL 16 + pgvector  │                      │    Redis 7 (CAG & Cache)    │
+                │  - Tenancy & Documents      │                      │  - Sub-20ms Response Cache  │
+                │  - Document Chunks & tsvec  │                      │  - Short-Term Sessions      │
+                │  - Long-Term Memories (MAG) │                      │  - Tool / Retrieval Caches  │
+                └─────────────────────────────┘                      └─────────────────────────────┘
                                                       │
                        ┌──────────────────────────────┴──────────────────────────────┐
                        │                   LangGraph Agent Runtime                   │
@@ -71,7 +80,7 @@ A deployable, production-grade agentic knowledge platform engineered to answer c
 | :--- | :--- |
 | **Runtime** | Node.js 24+ LTS |
 | **Language** | TypeScript (Strict Mode) |
-| **Backend API** | Fastify 5.x |
+| **Backend API** | Next.js 15 Route Handlers (Node.js runtime) |
 | **Frontend UI** | Next.js 15 (App Router) + React 19 + Tailwind CSS |
 | **Database & Vectors** | PostgreSQL 16 + pgvector (`vector(1536)`) |
 | **Cache & Sessions** | Redis 7 + ioredis |
@@ -116,10 +125,9 @@ cp .env.example .env
 docker compose up -d --build
 ```
 Access the application:
-- **Next.js Web UI**: [http://localhost:3000](http://localhost:3000)
-- **Fastify API Server**: [http://localhost:3001](http://localhost:3001)
-- **Health Check**: [http://localhost:3001/api/v1/health](http://localhost:3001/api/v1/health)
-- **Readiness Check**: [http://localhost:3001/api/v1/ready](http://localhost:3001/api/v1/ready)
+- **Unified Workspace & API**: [http://localhost:3000](http://localhost:3000)
+- **Health Check**: [http://localhost:3000/api/v1/health](http://localhost:3000/api/v1/health)
+- **Readiness Check**: [http://localhost:3000/api/v1/ready](http://localhost:3000/api/v1/ready)
 
 ---
 
@@ -141,7 +149,7 @@ npm test
 # Run automated benchmark evaluation harness
 npm run benchmark
 
-# Start dev servers (API on 3001, Web on 3000)
+# Start Next.js development server on port 3000
 npm run dev
 ```
 
