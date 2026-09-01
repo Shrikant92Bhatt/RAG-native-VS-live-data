@@ -1,0 +1,41 @@
+{
+  "name": "rag-native-vs-live-data",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-Ready Agentic RAG over Live Data & Memory (Node.js/TypeScript)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "start:api": "npm run start --workspace=apps/api",
+    "start:web": "npm run start --workspace=apps/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspace=apps/api",
+    "test:watch": "npm run test:watch --workspace=apps/api",
+    "benchmark": "npm run benchmark --workspace=apps/api",
+    "db:migrate": "npm run db:migrate --workspace=apps/api",
+    "db:seed": "npm run db:seed --workspace=apps/api",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "keywords": [
+    "rag",
+    "agentic-rag",
+    "cag",
+    "mag",
+    "pgvector",
+    "redis",
+    "mcp",
+    "fastify",
+    "nextjs",
+    "typescript"
+  ],
+  "author": "Shrikant Bhatt",
+  "license": "MIT"
+}
