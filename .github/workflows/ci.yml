@@ -47,13 +47,13 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Install Monorepo Dependencies
+      - name: Install Dependencies
         run: npm ci || npm install
 
-      - name: Typecheck Backend & Frontend
+      - name: Typecheck Application
         run: npm run typecheck
 
-      - name: Run Backend Unit & Integration Tests
+      - name: Run Unit & Integration Tests
         run: npm test
         env:
           DATABASE_URL: postgres://postgres:postgrespassword@localhost:5432/rag_live_data
@@ -66,6 +66,9 @@ jobs:
         env:
           DEFAULT_LLM_PROVIDER: mock
 
+      - name: Build Next.js Production Bundle
+        run: npm run build
+
   docker-build:
     name: Container Build & Verification
     runs-on: ubuntu-latest
@@ -77,18 +80,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Fastify API Container
+      - name: Build Unified Next.js Container
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: infra/docker/Dockerfile.api
+          file: Dockerfile
           push: false
-          tags: rag-api:latest
-
-      - name: Build Next.js Web Container
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: infra/docker/Dockerfile.web
-          push: false
-          tags: rag-web:latest
+          tags: rag-app:latest

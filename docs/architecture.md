@@ -8,37 +8,25 @@
 ## 1. High-Level Architecture Diagram
 
 ```text
-                               ┌──────────────────────────────────────────────┐
-                               │           Next.js Precision UI (Web)         │
-                               │  Chat Stream • Citation Drawer • Connectors  │
-                               │  Memory Vault • Benchmark Telemetry Dashboard│
-                               └──────────────────────┬───────────────────────┘
-                                                      │ HTTPS / SSE Stream
-                               ┌──────────────────────▼───────────────────────┐
-                               │       Fastify Production API Gateway         │
-                               │  Auth / JWT • Tenant Isolation • Rate Limits │
-                               │  Prompt Injection Defense • Pino Logging     │
-                               └──────────────────────┬───────────────────────┘
-                                                      │
-                       ┌──────────────────────────────┴──────────────────────────────┐
-                       │                   LangGraph Agent Runtime                   │
-                       │                                                             │
-                       │  1. Intent & Complexity Router (Direct / CAG / RAG / MAG)   │
-                       │  2. Query Planner & Multi-Hop Decomposer                    │
-                       │  3. Multi-Tier Cache Layer (Exact, Semantic, Retrieval)     │
-                       │  4. Hybrid Retriever (Vector + BM25 + Reciprocal Rank + RR) │
-                       │  5. Memory Engine (Short-Term Redis + Long-Term pgvector)   │
-                       │  6. Live MCP Tools Orchestrator (Gmail, Notion, Jira)       │
-                       │  7. Synthesis & Citation Provenance Validator               │
-                       └──────────────┬───────────────────────────────┬──────────────┘
-                                      │                               │
-                ┌─────────────────────▼───────┐          ┌────────────▼──────────────┐
-                │   PostgreSQL 16 + pgvector  │          │   Redis (Cache & Queues)  │
-                │  - Tenancy & Auth           │          │  - Response / Semantic    │
-                │  - Documents & Chunks       │          │  - Tool Result Cache      │
-                │  - Long-Term Memories       │          │  - Short-Term Sessions    │
-                │  - Citations & Audit Logs   │          │  - Distributed Locks      │
-                └─────────────────────────────┘          └───────────────────────────┘
+       ┌─────────────────────────────────────────────────────────────────────────────┐
+       │                       Unified Next.js 15 Application                        │
+       │                                                                             │
+       │   ┌─────────────────────────────────┐   ┌───────────────────────────────┐   │
+       │   │   Architectural Workspace UI    │   │  Route Handlers (/api/v1/...) │   │
+       │   │  • Chat Stream & Citations      │   │  • Node.js Server Runtime     │   │
+       │   │  • Memory Vault (MAG)           │◄─►│  • Agent Orchestrator & SSE   │   │
+       │   │  • Connectors & Telemetry       │   │  • Multi-Hop Planner & Router │   │
+       │   └─────────────────────────────────┘   └───────────────┬───────────────┘   │
+       └─────────────────────────────────────────────────────────┼───────────────────┘
+                                                                 │
+                                ┌────────────────────────────────┴───────────────────┐
+                                │                                                    │
+                ┌───────────────▼─────────────┐                      ┌───────────────▼─────────────┐
+                │   PostgreSQL 16 + pgvector  │                      │    Redis 7 (CAG & Cache)    │
+                │  - Tenancy & Documents      │                      │  - Sub-20ms Response Cache  │
+                │  - Document Chunks & tsvec  │                      │  - Short-Term Sessions      │
+                │  - Long-Term Memories (MAG) │                      │  - Tool / Retrieval Caches  │
+                └─────────────────────────────┘                      └─────────────────────────────┘
 ```
 
 ---
