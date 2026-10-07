@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Mail,
   FileText,
-  BrainCircuit
+  BrainCircuit,
+  FileUp
 } from 'lucide-react';
 import { IntegrationStatus } from '../types/index';
 import { Button } from './ui/button';
@@ -19,18 +20,24 @@ import { Badge } from './ui/badge';
 
 interface SidebarProps {
   onNewChat: () => void;
+  onOpenKnowledgeBase: () => void;
   onOpenMemory: () => void;
   onOpenTelemetry: () => void;
   onOpenIntegrations: () => void;
   integrations: IntegrationStatus[];
+  documentCount?: number;
+  memoryCount?: number;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   onNewChat,
+  onOpenKnowledgeBase,
   onOpenMemory,
   onOpenTelemetry,
   onOpenIntegrations,
   integrations,
+  documentCount = 3,
+  memoryCount = 2,
 }) => {
   return (
     <aside className="w-72 bg-card border-r border-border flex flex-col h-full select-none">
@@ -49,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Primary Actions */}
-      <div className="p-3">
+      <div className="p-3 space-y-2">
         <Button
           onClick={onNewChat}
           variant="secondary"
@@ -58,6 +65,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <MessageSquarePlus className="w-3.5 h-3.5 text-amber-400" />
           New Investigation
         </Button>
+
+        <Button
+          onClick={onOpenKnowledgeBase}
+          variant="amber"
+          className="w-full justify-center gap-2 text-xs"
+        >
+          <FileUp className="w-3.5 h-3.5" />
+          Upload Files / Knowledge
+        </Button>
       </div>
 
       {/* Active Workspace / Session */}
@@ -65,11 +81,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="px-2 py-1 text-[10px] font-mono uppercase text-muted-foreground tracking-wider">
           Active Workspace
         </div>
-        <div className="px-3 py-2.5 rounded-md bg-secondary/60 border border-amber-500/30 text-xs text-foreground flex items-start gap-2 cursor-pointer shadow-sm">
+        <div 
+          onClick={onOpenKnowledgeBase}
+          className="px-3 py-2.5 rounded-md bg-secondary/60 border border-amber-500/30 text-xs text-foreground flex items-start gap-2 cursor-pointer shadow-sm hover:border-amber-500/60 transition-colors"
+        >
           <Layers className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
           <div className="truncate">
             <p className="font-medium truncate">Architecture & Live Sync</p>
-            <p className="text-[10px] text-muted-foreground font-mono">3 sources • 2 memories</p>
+            <p className="text-[10px] text-muted-foreground font-mono">{documentCount} docs indexed • {memoryCount} memories</p>
           </div>
         </div>
       </div>
@@ -104,8 +123,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="capitalize">{item.provider}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="text-[10px] font-mono text-muted-foreground">{item.syncedItems} synced</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'connected' ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  {item.status === 'connected' ? `${item.syncedItems} synced` : 'Sandbox'}
+                </span>
               </div>
             </div>
           ))}
@@ -115,6 +136,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* System Utilities Footer */}
       <div className="p-3 border-t border-border space-y-1 bg-card">
         <Button
+          onClick={onOpenKnowledgeBase}
+          variant="ghost"
+          className="w-full justify-between px-2.5 h-8 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <span className="flex items-center gap-2">
+            <FileText className="w-3.5 h-3.5 text-amber-400" />
+            Knowledge Base
+          </span>
+          <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{documentCount} Docs</Badge>
+        </Button>
+
+        <Button
           onClick={onOpenMemory}
           variant="ghost"
           className="w-full justify-between px-2.5 h-8 text-xs text-muted-foreground hover:text-foreground"
@@ -123,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Database className="w-3.5 h-3.5 text-amber-400" />
             Memory Vault (MAG)
           </span>
-          <Badge variant="secondary" className="text-[9px] px-1.5 py-0">2 Facts</Badge>
+          <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{memoryCount} Facts</Badge>
         </Button>
 
         <Button
